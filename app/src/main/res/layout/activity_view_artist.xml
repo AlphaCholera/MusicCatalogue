@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".ViewAlbum">
+
+    <ImageView
+        android:id="@+id/artist_image"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_gravity="center"
+        tools:srcCompat="@tools:sample/avatars"
+        android:layout_margin="15dp"/>
+
+    <TextView
+        android:id="@+id/textView2"
+        style="@style/TextAppearance.AppCompat.Headline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:text="  Artist Info"
+        android:textColor="@android:color/background_dark" />
+
+    <ListView
+        android:id="@+id/artist_info_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="149dp" />
+
+    <TextView
+        android:id="@+id/textView3"
+        style="@style/TextAppearance.AppCompat.Headline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:text="  Songs List"
+        android:textColor="@android:color/background_dark" />
+
+    <ListView
+        android:id="@+id/songs_info_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="200dp" />
+
+</LinearLayout>
