@@ -2,12 +2,18 @@ package com.alphacholera.musiccatalogue;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 
@@ -16,6 +22,7 @@ public class ViewSong extends AppCompatActivity {
     private DatabaseManagement databaseManagement;
     private ListView listView;
     private ImageView albumImage;
+    private Button playSong;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,8 +31,9 @@ public class ViewSong extends AppCompatActivity {
         databaseManagement = new DatabaseManagement(this);
         listView = findViewById(R.id.list_view);
         albumImage = findViewById(R.id.album_image);
+        playSong = findViewById(R.id.play_song);
 
-        String songID = getIntent().getStringExtra("songID");
+        final String songID = getIntent().getStringExtra("songID");
         String albumID = getIntent().getStringExtra("albumID");
 
         Glide.with(this)
@@ -34,7 +42,7 @@ public class ViewSong extends AppCompatActivity {
                 .into(albumImage);
 
         String[] info = databaseManagement.getSongInfo(songID);
-        ArrayList<String> details = new ArrayList<>();
+        final ArrayList<String> details = new ArrayList<>();
         details.add("Name : "+info[1]);
         details.add("Album : " + databaseManagement.getAlbumName(albumID));
         details.add("Language : " + info[3]);
@@ -52,5 +60,22 @@ public class ViewSong extends AppCompatActivity {
         details.add("You have played this song " + databaseManagement.getFrequencyOfSong(songID) + " times");
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, details);
         listView.setAdapter(adapter);
+
+        playSong.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int frequency = databaseManagement.updateUserData(songID);
+                FirebaseDatabase.getInstance().getReference()
+                        .child("userInfo")
+                        .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                        .child("songInfo")
+                        .child(songID)
+                        .setValue(frequency);
+                details.remove(5);
+                details.add(5, "You have played this song " + frequency + " times");
+                ((BaseAdapter) listView.getAdapter()).notifyDataSetChanged();
+                Toast.makeText(getApplicationContext(), "You have played this song..!!", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

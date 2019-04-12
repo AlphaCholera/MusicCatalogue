@@ -88,10 +88,8 @@ public class DatabaseManagement extends SQLiteOpenHelper {
         }
 
         for (Song song : songsList) {
-            int num = 0;
             db.execSQL("insert into " + SONGS_TABLE + " values('" + song.getSongId()+ "', '" + song.getSongName() +
                     "', '" + song.getAlbumID() + "', '" + song.getLanguage() + "', " + song.getDuration() + ")");
-            db.execSQL("insert into " + USER_TABLE + " values ('" + song.getSongId() + "', " + num + ")");
         }
 
         for (ArtistAndSong composition : compositionsList) {
@@ -170,8 +168,11 @@ public class DatabaseManagement extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("select " + USER_COLUMN_1 + " from " + USER_TABLE + " where "
                 + USER_COLUMN_0 + " = '" + songID + "'", null);
-        cursor.moveToNext();
-        return cursor.getInt(0);
+        cursor.moveToFirst();
+        if (cursor.getCount() > 0)
+            return cursor.getInt(0);
+        return 0;
+
     }
 
     public ArrayList<Song> getSongsOfAnAlbum(String albumID) {
@@ -252,5 +253,29 @@ public class DatabaseManagement extends SQLiteOpenHelper {
                 strings[i] = cursor.getString(i);
         }
         return strings;
+    }
+
+    public int updateUserData(String songID) {
+        SQLiteDatabase db1 = getReadableDatabase();
+        SQLiteDatabase db2 = getWritableDatabase();
+        int frequency;
+        Cursor cursor1 = db1.rawQuery("select " + USER_COLUMN_1 + " from " + USER_TABLE + " where "
+                + USER_COLUMN_0 + " = '" + songID + "'", null);
+        if (cursor1.getCount() > 0) {
+            Cursor cursor2 = db1.rawQuery("select " + USER_COLUMN_1 + " from " + USER_TABLE
+                    + " where " + USER_COLUMN_0 + " = '" + songID + "'", null);
+            cursor2.moveToFirst();
+            frequency = cursor2.getInt(0) + 1;
+            db2.execSQL("update " + USER_TABLE + " set " + USER_COLUMN_1 + " = " + frequency + " where " + USER_COLUMN_0 + " = '" + songID + "'");
+        } else {
+            frequency = 1;
+            db2.execSQL("insert into " + USER_TABLE + " values('" + songID + "', " + frequency + ")");
+        }
+        return frequency;
+    }
+
+    public void insertIntoUserTable(Long frequency, String songID) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.execSQL("insert into " + USER_TABLE + " values( '" + songID + "', " + frequency + ")");
     }
 }

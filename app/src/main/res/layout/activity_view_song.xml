@@ -23,6 +23,13 @@
         android:text="  Song Info"
         android:textColor="@android:color/background_dark" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Play Song"
+        android:layout_gravity="center"
+        android:id="@+id/play_song"/>
+
     <ListView
         android:id="@+id/list_view"
         android:layout_width="match_parent"
