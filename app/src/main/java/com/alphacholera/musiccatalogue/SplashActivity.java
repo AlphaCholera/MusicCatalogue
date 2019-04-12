@@ -34,10 +34,9 @@ public class SplashActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN = 1;
     private FirebaseUser currentUser;
     private FirebaseAuth firebaseAuth;
+    private FirebaseAuth.AuthStateListener authStateListener;
 
-    // For knowing whether the user has opened the app for the first time
     private SharedPreferences sharedPref;
-
     // For collecting all the data from the FireBase
     private FirebaseDatabase firebaseDatabase;
     // For storing the data into local database
@@ -57,45 +56,63 @@ public class SplashActivity extends AppCompatActivity {
 
         // Initializing objects of the respective classes
         databaseManagement = new DatabaseManagement(this);
-        sharedPref = getSharedPreferences("com.alphacholera.musiccatalogue", MODE_PRIVATE);
         firebaseDatabase = FirebaseDatabase.getInstance();
-
-        // If the user has logged in for the first time, copy all data from FireBase into the local database
-        if (sharedPref.getBoolean("firstRun", true)) {
-            Toast.makeText(getApplicationContext(), "First time opening app", Toast.LENGTH_SHORT).show();
-
-            readSongs(new DataStatus() {
-                @Override
-                public void readAllData() {
-                    databaseManagement.addAllDataIntoTables(songsList, albumsList, artistsList, compositionsList);
-                    sharedPref.edit().putBoolean("firstRun", false).apply();
-                }
-            });
-        }
 
         // Initializing the authentication components of FireBase Auth
         firebaseAuth = FirebaseAuth.getInstance();
 
 
         // If no user is registered in the app, make him/her register
-        currentUser = firebaseAuth.getCurrentUser();
-        if (currentUser == null) {
-            // Not signed in
-            startActivityForResult(AuthUI.getInstance()
-                    .createSignInIntentBuilder()
-                    .setAvailableProviders(Arrays.asList(
-                            new AuthUI.IdpConfig.GoogleBuilder().build(),
-                            new AuthUI.IdpConfig.EmailBuilder().build()
-                    ))
-                    .build(), RC_SIGN_IN);
+        authStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                currentUser = firebaseAuth.getCurrentUser();
+                sharedPref = getSharedPreferences("com.alphacholera.musiccatalogue", MODE_PRIVATE);
 
-        } else {
-            // User already has an account
-            Intent intent = new Intent(SplashActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
-        }
-
+                if (currentUser == null) {
+                    databaseManagement.deleteAllTables();
+                    // Not signed in
+                    sharedPref.edit().putBoolean("userDataFetch", true).apply();
+                    startActivityForResult(AuthUI.getInstance()
+                            .createSignInIntentBuilder()
+                            .setAvailableProviders(Arrays.asList(
+                                    new AuthUI.IdpConfig.GoogleBuilder().build(),
+                                    new AuthUI.IdpConfig.EmailBuilder().build()
+                            ))
+                            .build(), RC_SIGN_IN);
+                } else {
+                    // User already has an account
+                    if (sharedPref.getBoolean("userDataFetch", true)) {
+                        readSongs(new DataStatus() {
+                            @Override
+                            public void readAllData() {
+                                databaseManagement.addAllDataIntoTables(songsList, albumsList, artistsList, compositionsList);
+                            }
+                        });
+                        firebaseDatabase.getReference()
+                                .child("users")
+                                .child(currentUser.getUid())
+                                .setValue(new User(currentUser.getUid(), currentUser.getDisplayName(),
+                                        currentUser.getEmail(), currentUser.getPhotoUrl().toString()));
+                        Toast.makeText(getApplicationContext(), "Writing user data to FireBase", Toast.LENGTH_SHORT).show();
+                        readUserInfo(new UserDataStatus() {
+                            @Override
+                            public void readAllData() {
+                                sharedPref.edit().putBoolean("userDataFetch", false).apply();
+                                Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+                                startActivity(intent);
+                                finish();
+                            }
+                        });
+                    } else {
+                        Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }
+                }
+            }
+        };
+        firebaseAuth.addAuthStateListener(authStateListener);
     }
 
     public void readSongs(final DataStatus status) {
@@ -104,19 +121,22 @@ public class SplashActivity extends AppCompatActivity {
         dbref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                songsList.clear();
+                songsList.clear();
                 for (DataSnapshot snapshot : dataSnapshot.child("songs").getChildren()) {
                     Song song = snapshot.getValue(Song.class);
                     songsList.add(song);
                 }
+                albumsList.clear();
                 for (DataSnapshot snapshot : dataSnapshot.child("albums").getChildren()) {
                     Album album = snapshot.getValue(Album.class);
                     albumsList.add(album);
                 }
+                artistsList.clear();
                 for (DataSnapshot snapshot : dataSnapshot.child("artists").getChildren()) {
                     Artist artist = snapshot.getValue(Artist.class);
                     artistsList.add(artist);
                 }
+                compositionsList.clear();
                 for (DataSnapshot snapshot : dataSnapshot.child("composition").getChildren()) {
                     ArtistAndSong composition = snapshot.getValue(ArtistAndSong.class);
                     compositionsList.add(composition);
@@ -138,21 +158,6 @@ public class SplashActivity extends AppCompatActivity {
         if (requestCode == RC_SIGN_IN) {
             if (resultCode == RESULT_OK) {
                 // User has signed in for the first time
-                currentUser = firebaseAuth.getCurrentUser();
-                firebaseDatabase.getReference()
-                        .child("users")
-                        .child(currentUser.getUid())
-                        .setValue(new User(currentUser.getUid(), currentUser.getDisplayName(),
-                                currentUser.getEmail(), currentUser.getPhotoUrl().toString()));
-                Toast.makeText(getApplicationContext(), "Writing user data to FireBase", Toast.LENGTH_SHORT).show();
-                readUserInfo(new UserDataStatus() {
-                    @Override
-                    public void readAllData() {
-                        Intent intent = new Intent(SplashActivity.this, MainActivity.class);
-                        startActivity(intent);
-                        finish();
-                    }
-                });
             } else if (resultCode == RESULT_CANCELED) {
                 finish();
             }

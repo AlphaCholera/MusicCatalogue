@@ -57,7 +57,7 @@ public class TrendingFragment extends Fragment {
     }
 
     public void getMostPopularSongs (final DataStatus status) {
-        Query query = FirebaseDatabase.getInstance().getReference().child("songs");
+        Query query = FirebaseDatabase.getInstance().getReference().child("songs").orderByChild("frequency");
         query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {

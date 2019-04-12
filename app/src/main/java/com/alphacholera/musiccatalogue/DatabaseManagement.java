@@ -300,4 +300,14 @@ public class DatabaseManagement extends SQLiteOpenHelper {
         getWritableDatabase().execSQL("insert into " + HISTORY_TABLE + " values('" + songID + "', '"
                 + dateAndTime + "')");
     }
+
+    public void deleteAllTables() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("delete from " + SONGS_TABLE);
+        db.execSQL("delete from " + ALBUM_TABLE);
+        db.execSQL("delete from " + ARTIST_TABLE);
+        db.execSQL("delete from " + ARTIST_AND_SONG_TABLE);
+        db.execSQL("delete from " + USER_TABLE);
+        db.execSQL("delete from " + HISTORY_TABLE);
+    }
 }

@@ -1,6 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layout_gravity="center"
+    android:gravity="center">
 
-</android.support.constraint.ConstraintLayout>
+    <ImageView
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_gravity="center"
+        android:id="@+id/profile_image"
+        android:padding="10dp"
+        android:src="@drawable/no_profile_image"/>
+
+    <ListView
+        android:id="@+id/profile_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="258dp"
+        android:padding="10dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:id="@+id/sign_out"
+        android:text="Sign Out"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:id="@+id/refresh_all_data"
+        android:text="Refresh All Data"/>
+
+</LinearLayout>
