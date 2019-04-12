@@ -1,5 +1,7 @@
 package com.alphacholera.musiccatalogue;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -10,11 +12,17 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.alphacholera.musiccatalogue.UtilityClasses.Song;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.MutableData;
 import com.google.firebase.database.ServerValue;
+import com.google.firebase.database.Transaction;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -84,6 +92,24 @@ public class ViewSong extends AppCompatActivity {
                         .child("historyInfo")
                         .child(time)
                         .setValue(songID);
+
+                final DatabaseReference dbref = FirebaseDatabase.getInstance().getReference().child("songs").child(songID);
+                dbref.runTransaction(new Transaction.Handler() {
+                    @NonNull
+                    @Override
+                    public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
+                        Song song = mutableData.getValue(Song.class);
+                        int frequency = song.getFrequency();
+                        song.setFrequency(frequency+1);
+                        dbref.setValue(song);
+                        return Transaction.success(mutableData);
+                    }
+
+                    @Override
+                    public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
+
+                    }
+                });
 
                 databaseManagement.insertIntoHistoryTable(songID, time);
                 details.remove(5);

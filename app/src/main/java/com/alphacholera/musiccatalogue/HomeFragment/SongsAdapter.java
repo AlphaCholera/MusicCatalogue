@@ -30,7 +30,7 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.MyViewHolder
     private ClickListener listener;
     private DatabaseManagement databaseManagement;
 
-    SongsAdapter(Context context, ArrayList<Song> songs, ClickListener listener) {
+    public SongsAdapter(Context context, ArrayList<Song> songs, ClickListener listener) {
         this.context = context;
         this.songs = songs;
         this.listener = listener;
@@ -81,7 +81,7 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.MyViewHolder
         return songs.size();
     }
 
-    interface ClickListener {
+    public interface ClickListener {
         public void onClick(View view, int position);
     }
 }

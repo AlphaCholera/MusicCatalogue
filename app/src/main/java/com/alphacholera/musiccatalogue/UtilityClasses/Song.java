@@ -6,6 +6,7 @@ public class Song {
     private String albumID;
     private String language;
     private int duration;
+    private int frequency;
 
     // Constructor invoked when data loaded from FireBase
     public Song() {
@@ -40,23 +41,11 @@ public class Song {
         return duration;
     }
 
-    public void setSongId(String songId) {
-        this.songId = songId;
+    public int getFrequency() {
+        return frequency;
     }
 
-    public void setSongName(String songName) {
-        this.songName = songName;
-    }
-
-    public void setAlbumID(String albumID) {
-        this.albumID = albumID;
-    }
-
-    public void setLanguage(String language) {
-        this.language = language;
-    }
-
-    public void setDuration(int duration) {
-        this.duration = duration;
+    public void setFrequency(int frequency) {
+        this.frequency = frequency;
     }
 }
