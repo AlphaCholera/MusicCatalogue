@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.alphacholera.musiccatalogue.UtilityClasses.Album;
 import com.alphacholera.musiccatalogue.UtilityClasses.Artist;
 import com.alphacholera.musiccatalogue.UtilityClasses.ArtistAndSong;
+import com.alphacholera.musiccatalogue.UtilityClasses.History;
 import com.alphacholera.musiccatalogue.UtilityClasses.Song;
 
 import java.util.ArrayList;
@@ -44,6 +45,10 @@ public class DatabaseManagement extends SQLiteOpenHelper {
     private static final String USER_COLUMN_0 = "Song_ID";
     private static final String USER_COLUMN_1 = "Frequency";
 
+    private static final String HISTORY_TABLE = "History";
+    private static final String HISTORY_COLUMN_0 = "SongID";
+    private static final String HISTORY_COLUMN_1 = "DateTime";
+
     public DatabaseManagement(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -52,8 +57,7 @@ public class DatabaseManagement extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("create table " + SONGS_TABLE + " (" + SONGS_COLUMN_0 + " varchar(5) primary key, " + SONGS_COLUMN_1
                 + " varchar(40), " + SONGS_COLUMN_2 + " varchar(5), " + SONGS_COLUMN_3 + " varchar(10), " + SONGS_COLUMN_4
-                + " number(3), foreign key (" + SONGS_COLUMN_2 + ") references " +
-                ALBUM_TABLE + "(" + ALBUM_COLUMN_0 + "))");
+                + " number(3), foreign key (" + SONGS_COLUMN_2 + ") references " + ALBUM_TABLE + "(" + ALBUM_COLUMN_0 + "))");
 
         db.execSQL("create table " + ALBUM_TABLE + " (" + ALBUM_COLUMN_0 + " varchar(5) primary key, " + ALBUM_COLUMN_1
                 + " varchar(40), " + ALBUM_COLUMN_2 + " varchar(100), " + ALBUM_COLUMN_3 + " number(4))");
@@ -67,6 +71,9 @@ public class DatabaseManagement extends SQLiteOpenHelper {
 
         db.execSQL("create table " + USER_TABLE + " (" + USER_COLUMN_0 + " varchar(5), " + USER_COLUMN_1 + " number(4)," +
                 " foreign key (" + USER_COLUMN_0 + ") references " + SONGS_TABLE + "(" + SONGS_COLUMN_0 + "))");
+
+        db.execSQL("create table " + HISTORY_TABLE + " (" + HISTORY_COLUMN_0 + " varchar(5), " + HISTORY_COLUMN_1 +
+                " date primary key, foreign key (" + HISTORY_COLUMN_0 + ") references " + SONGS_TABLE + "(" + SONGS_COLUMN_0+ "))");
     }
 
     @Override
@@ -277,5 +284,20 @@ public class DatabaseManagement extends SQLiteOpenHelper {
     public void insertIntoUserTable(Long frequency, String songID) {
         SQLiteDatabase db = getWritableDatabase();
         db.execSQL("insert into " + USER_TABLE + " values( '" + songID + "', " + frequency + ")");
+    }
+
+    public ArrayList<History> fetchAllHistoryOfUser() {
+        Cursor cursor = getReadableDatabase().rawQuery("select * from " + HISTORY_TABLE + " order by "
+                + HISTORY_COLUMN_1 + " desc", null);
+        ArrayList<History> histories = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            histories.add(new History(cursor.getString(0), cursor.getString(1)));
+        }
+        return histories;
+    }
+
+    public void insertIntoHistoryTable (String songID, String dateAndTime) {
+        getWritableDatabase().execSQL("insert into " + HISTORY_TABLE + " values('" + songID + "', '"
+                + dateAndTime + "')");
     }
 }

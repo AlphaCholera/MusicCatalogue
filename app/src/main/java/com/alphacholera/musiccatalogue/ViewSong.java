@@ -14,8 +14,11 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class ViewSong extends AppCompatActivity {
 
@@ -65,12 +68,24 @@ public class ViewSong extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 int frequency = databaseManagement.updateUserData(songID);
+
                 FirebaseDatabase.getInstance().getReference()
                         .child("userInfo")
                         .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                         .child("songInfo")
                         .child(songID)
                         .setValue(frequency);
+
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String time = sdf.format(new Date());
+                FirebaseDatabase.getInstance().getReference()
+                        .child("userInfo")
+                        .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                        .child("historyInfo")
+                        .child(time)
+                        .setValue(songID);
+
+                databaseManagement.insertIntoHistoryTable(songID, time);
                 details.remove(5);
                 details.add(5, "You have played this song " + frequency + " times");
                 ((BaseAdapter) listView.getAdapter()).notifyDataSetChanged();

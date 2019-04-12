@@ -5,7 +5,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import com.alphacholera.musiccatalogue.Fragments.HistoryFragment;
+import com.alphacholera.musiccatalogue.HistoryFragment.HistoryFragment;
 import com.alphacholera.musiccatalogue.Fragments.ProfileFragment;
 import com.alphacholera.musiccatalogue.Fragments.TrendingFragment;
 import com.alphacholera.musiccatalogue.Fragments.HomeFragment;

@@ -11,6 +11,7 @@ import android.widget.Toast;
 import com.alphacholera.musiccatalogue.UtilityClasses.Album;
 import com.alphacholera.musiccatalogue.UtilityClasses.Artist;
 import com.alphacholera.musiccatalogue.UtilityClasses.ArtistAndSong;
+import com.alphacholera.musiccatalogue.UtilityClasses.History;
 import com.alphacholera.musiccatalogue.UtilityClasses.Song;
 import com.alphacholera.musiccatalogue.UtilityClasses.User;
 import com.alphacholera.musiccatalogue.UtilityClasses.UserInfo;
@@ -160,13 +161,17 @@ public class SplashActivity extends AppCompatActivity {
 
     void readUserInfo(final UserDataStatus status) {
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        final DatabaseReference dbref = firebaseDatabase.getReference().child("userInfo").child(currentUser.getUid()).child("songInfo");
+        final DatabaseReference dbref = firebaseDatabase.getReference().child("userInfo").child(currentUser.getUid());
         dbref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    for (DataSnapshot snapshot : dataSnapshot.child("songInfo").getChildren()) {
                         UserInfo userInfo = new UserInfo(snapshot.getKey(), (Long) snapshot.getValue());
                         databaseManagement.insertIntoUserTable(userInfo.getFrequency(), userInfo.getSongID());
+                    }
+                    for (DataSnapshot snapshot : dataSnapshot.child("historyInfo").getChildren()) {
+                        History history = new History((String)snapshot.getValue(), snapshot.getKey());
+                        databaseManagement.insertIntoHistoryTable(history.getSongID(), history.getDateAndTime());
                     }
                 dbref.removeEventListener(this);
                 status.readAllData();
