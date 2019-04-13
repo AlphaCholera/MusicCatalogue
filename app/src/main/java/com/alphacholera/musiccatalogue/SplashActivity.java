@@ -70,7 +70,7 @@ public class SplashActivity extends AppCompatActivity {
                 sharedPref = getSharedPreferences("com.alphacholera.musiccatalogue", MODE_PRIVATE);
 
                 if (currentUser == null) {
-                    databaseManagement.deleteAllTables();
+                    // databaseManagement.deleteAllTables();
                     // Not signed in
                     sharedPref.edit().putBoolean("userDataFetch", true).apply();
                     startActivityForResult(AuthUI.getInstance()
@@ -83,19 +83,12 @@ public class SplashActivity extends AppCompatActivity {
                 } else {
                     // User already has an account
                     if (sharedPref.getBoolean("userDataFetch", true)) {
-                        readSongs(new DataStatus() {
-                            @Override
-                            public void readAllData() {
-                                databaseManagement.addAllDataIntoTables(songsList, albumsList, artistsList, compositionsList);
-                            }
-                        });
                         firebaseDatabase.getReference()
                                 .child("users")
                                 .child(currentUser.getUid())
                                 .setValue(new User(currentUser.getUid(), currentUser.getDisplayName(),
                                         currentUser.getEmail(), currentUser.getPhotoUrl().toString()));
-                        Toast.makeText(getApplicationContext(), "Writing user data to FireBase", Toast.LENGTH_SHORT).show();
-                        readUserInfo(new UserDataStatus() {
+                        readData(new DataStatus() {
                             @Override
                             public void readAllData() {
                                 sharedPref.edit().putBoolean("userDataFetch", false).apply();
@@ -104,6 +97,8 @@ public class SplashActivity extends AppCompatActivity {
                                 finish();
                             }
                         });
+
+                        Toast.makeText(getApplicationContext(), "Writing user data to FireBase", Toast.LENGTH_SHORT).show();
                     } else {
                         Intent intent = new Intent(SplashActivity.this, MainActivity.class);
                         startActivity(intent);
@@ -112,10 +107,9 @@ public class SplashActivity extends AppCompatActivity {
                 }
             }
         };
-        firebaseAuth.addAuthStateListener(authStateListener);
     }
 
-    public void readSongs(final DataStatus status) {
+    public void readData(final DataStatus status) {
         final DatabaseReference dbref = firebaseDatabase.getReference();
         dbref.keepSynced(true);
         dbref.addValueEventListener(new ValueEventListener() {
@@ -141,6 +135,16 @@ public class SplashActivity extends AppCompatActivity {
                     ArtistAndSong composition = snapshot.getValue(ArtistAndSong.class);
                     compositionsList.add(composition);
                 }
+                databaseManagement.deleteAllTables();
+                databaseManagement.addAllDataIntoTables(songsList, albumsList, artistsList, compositionsList);
+                for (DataSnapshot snapshot : dataSnapshot.child("userInfo").child(currentUser.getUid()).child("songInfo").getChildren()) {
+                    UserInfo userInfo = new UserInfo(snapshot.getKey(), (Long) snapshot.getValue());
+                    databaseManagement.insertIntoUserTable(userInfo.getFrequency(), userInfo.getSongID());
+                }
+                for (DataSnapshot snapshot : dataSnapshot.child("userInfo").child(currentUser.getUid()).child("historyInfo").getChildren()) {
+                    History history = new History((String)snapshot.getValue(), snapshot.getKey());
+                    databaseManagement.insertIntoHistoryTable(history.getSongID(), history.getDateAndTime());
+                }
                 dbref.removeEventListener(this);
                 status.readAllData();
             }
@@ -164,36 +168,19 @@ public class SplashActivity extends AppCompatActivity {
         }
     }
 
-    void readUserInfo(final UserDataStatus status) {
-        currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        final DatabaseReference dbref = firebaseDatabase.getReference().child("userInfo").child(currentUser.getUid());
-        dbref.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    for (DataSnapshot snapshot : dataSnapshot.child("songInfo").getChildren()) {
-                        UserInfo userInfo = new UserInfo(snapshot.getKey(), (Long) snapshot.getValue());
-                        databaseManagement.insertIntoUserTable(userInfo.getFrequency(), userInfo.getSongID());
-                    }
-                    for (DataSnapshot snapshot : dataSnapshot.child("historyInfo").getChildren()) {
-                        History history = new History((String)snapshot.getValue(), snapshot.getKey());
-                        databaseManagement.insertIntoHistoryTable(history.getSongID(), history.getDateAndTime());
-                    }
-                dbref.removeEventListener(this);
-                status.readAllData();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
     public interface DataStatus {
         void readAllData();
     }
 
-    public interface UserDataStatus {
-        void readAllData();
+    @Override
+    protected void onResume() {
+        super.onResume();
+        firebaseAuth.addAuthStateListener(authStateListener);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        firebaseAuth.removeAuthStateListener(authStateListener);
     }
 }

@@ -104,10 +104,12 @@ public class DatabaseManagement extends SQLiteOpenHelper {
                     composition.getArtistID() + "')");
         }
 
+        db.close();
     }
 
     public ArrayList<Song> getAllSongs() {
-        Cursor cursor = getReadableDatabase().rawQuery("select * from " + SONGS_TABLE, null);
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery("select * from " + SONGS_TABLE, null);
         ArrayList<Song> songs = new ArrayList<>();
         cursor.moveToFirst();
         songs.add(new Song(cursor.getString(0), cursor.getString(1), cursor.getString(2),
@@ -116,11 +118,13 @@ public class DatabaseManagement extends SQLiteOpenHelper {
             songs.add(new Song(cursor.getString(0), cursor.getString(1), cursor.getString(2),
                     cursor.getString(3), cursor.getInt(4)));
         }
+        db.close();
         return songs;
     }
 
     public ArrayList<Album> getAllAlbums() {
-        Cursor cursor = getReadableDatabase().rawQuery("select * from " + ALBUM_TABLE, null);
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery("select * from " + ALBUM_TABLE, null);
         ArrayList<Album> albums = new ArrayList<>();
         cursor.moveToFirst();
         albums.add(new Album(cursor.getString(0), cursor.getString(1), cursor.getString(2),
@@ -129,11 +133,13 @@ public class DatabaseManagement extends SQLiteOpenHelper {
             albums.add(new Album(cursor.getString(0), cursor.getString(1), cursor.getString(2),
                     cursor.getInt(3)));
         }
+        db.close();
         return albums;
     }
 
     public ArrayList<Artist> getAllArtists() {
-        Cursor cursor = getReadableDatabase().rawQuery("select * from " + ARTIST_TABLE, null);
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery("select * from " + ARTIST_TABLE, null);
         ArrayList<Artist> artists = new ArrayList<>();
         cursor.moveToFirst();
         artists.add(new Artist(cursor.getString(0), cursor.getString(1), cursor.getString(2),
@@ -142,6 +148,7 @@ public class DatabaseManagement extends SQLiteOpenHelper {
             artists.add(new Artist(cursor.getString(0), cursor.getString(1), cursor.getString(2),
                     cursor.getString(3)));
         }
+        db.close();
         return artists;
     }
 
@@ -149,6 +156,7 @@ public class DatabaseManagement extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("select " + ALBUM_COLUMN_1 + " from " + ALBUM_TABLE + " where " + ALBUM_COLUMN_0 + " = '" + albumID + "'", null);
         cursor.moveToFirst();
+        db.close();
         return cursor.getString(0);
     }
 
@@ -157,6 +165,7 @@ public class DatabaseManagement extends SQLiteOpenHelper {
         Cursor cursor =db.rawQuery("select " + ALBUM_COLUMN_2 + " from " + ALBUM_TABLE + " where "
                 + ALBUM_COLUMN_0 + " = '" + albumID + "'", null);
         cursor.moveToFirst();
+        db.close();
         return cursor.getString(0);
     }
 
@@ -168,6 +177,7 @@ public class DatabaseManagement extends SQLiteOpenHelper {
         ArrayList<String> artists = new ArrayList<>();
         while (cursor.moveToNext())
             artists.add(cursor.getString(0));
+        db.close();
         return artists;
     }
 
@@ -193,6 +203,7 @@ public class DatabaseManagement extends SQLiteOpenHelper {
             songs.add(new Song(cursor.getString(0), cursor.getString(1), cursor.getString(2),
                     cursor.getString(3), cursor.getInt(4)));
         }
+        db.close();
         return songs;
     }
 
@@ -209,6 +220,7 @@ public class DatabaseManagement extends SQLiteOpenHelper {
             songs.add(new Song(cursor.getString(0), cursor.getString(1), cursor.getString(2),
                     cursor.getString(3), cursor.getInt(4)));
         }
+        db.close();
         return songs;
     }
 
@@ -216,6 +228,7 @@ public class DatabaseManagement extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("select count(*) from " + SONGS_TABLE + " where " + SONGS_COLUMN_2 + " = '" + albumID + "'", null);
         cursor.moveToNext();
+        db.close();
         return cursor.getInt(0);
     }
 
@@ -224,6 +237,7 @@ public class DatabaseManagement extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery("select count(*) from " + ARTIST_AND_SONG_TABLE + " where " + ARTIST_AND_SONG_COLUMN_1
         + " = '" + artistID + "'", null);
         cursor.moveToNext();
+        db.close();
         return cursor.getInt(0);
     }
 
@@ -236,6 +250,7 @@ public class DatabaseManagement extends SQLiteOpenHelper {
                 strings[i] = cursor.getString(i);
             strings[4] = String.valueOf(cursor.getInt(4));
         }
+        db.close();
         return strings;
     }
 
@@ -248,6 +263,7 @@ public class DatabaseManagement extends SQLiteOpenHelper {
                 strings[i] = cursor.getString(i);
             strings[3] = String.valueOf(cursor.getInt(3));
         }
+        db.close();
         return strings;
     }
 
@@ -259,6 +275,7 @@ public class DatabaseManagement extends SQLiteOpenHelper {
             for (int i = 0; i <= 3; i++)
                 strings[i] = cursor.getString(i);
         }
+        db.close();
         return strings;
     }
 
@@ -278,27 +295,34 @@ public class DatabaseManagement extends SQLiteOpenHelper {
             frequency = 1;
             db2.execSQL("insert into " + USER_TABLE + " values('" + songID + "', " + frequency + ")");
         }
+        db1.close();
+        db2.close();
         return frequency;
     }
 
     public void insertIntoUserTable(Long frequency, String songID) {
         SQLiteDatabase db = getWritableDatabase();
         db.execSQL("insert into " + USER_TABLE + " values( '" + songID + "', " + frequency + ")");
+        db.close();
     }
 
     public ArrayList<History> fetchAllHistoryOfUser() {
-        Cursor cursor = getReadableDatabase().rawQuery("select * from " + HISTORY_TABLE + " order by "
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery("select * from " + HISTORY_TABLE + " order by "
                 + HISTORY_COLUMN_1 + " desc", null);
         ArrayList<History> histories = new ArrayList<>();
         while (cursor.moveToNext()) {
             histories.add(new History(cursor.getString(0), cursor.getString(1)));
         }
+        db.close();
         return histories;
     }
 
     public void insertIntoHistoryTable (String songID, String dateAndTime) {
-        getWritableDatabase().execSQL("insert into " + HISTORY_TABLE + " values('" + songID + "', '"
+        SQLiteDatabase db = getReadableDatabase();
+        db.execSQL("insert into " + HISTORY_TABLE + " values('" + songID + "', '"
                 + dateAndTime + "')");
+        db.close();
     }
 
     public void deleteAllTables() {
@@ -309,5 +333,7 @@ public class DatabaseManagement extends SQLiteOpenHelper {
         db.execSQL("delete from " + ARTIST_AND_SONG_TABLE);
         db.execSQL("delete from " + USER_TABLE);
         db.execSQL("delete from " + HISTORY_TABLE);
+        db.close();
+        System.out.println("Deleted data from tables\n");
     }
 }
