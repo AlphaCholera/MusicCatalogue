@@ -1,5 +1,6 @@
 package com.alphacholera.musiccatalogue.Fragments;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -27,6 +28,7 @@ public class HomeFragment extends Fragment {
         ViewPager viewPager = view.findViewById(R.id.home_view_pager);
         setUpViewPager(viewPager);
         tabLayout.setupWithViewPager(viewPager);
+        tabLayout.setTabTextColors(Color.parseColor("#FFFFFF"), Color.parseColor("#FFFFFF"));
         tabLayout.getTabAt(0).select();
         for (int i = 0; i < 3; i++)
             tabLayout.getTabAt(i).setText(tabs[i]);

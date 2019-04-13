@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -21,6 +22,7 @@ import java.util.ArrayList;
     public class AlbumsAdapter extends RecyclerView.Adapter<AlbumsAdapter.MyViewHolder> {
 
     private ArrayList<Album> albums;
+    private ArrayList<Album> albumsFilteredList;
     private Context context;
     private ClickListener listener;
     private DatabaseManagement databaseManagement;
@@ -29,6 +31,7 @@ import java.util.ArrayList;
         this.context = context;
         this.albums = albums;
         this.listener = listener;
+        this.albumsFilteredList = albums;
         this.databaseManagement = new DatabaseManagement(context);
     }
 
@@ -47,7 +50,7 @@ import java.util.ArrayList;
     }
 
     interface ClickListener {
-        void onClick(View view, int position);
+        void onClick(View view, Album album);
     }
 
     @NonNull
@@ -58,7 +61,7 @@ import java.util.ArrayList;
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                listener.onClick(v, myViewHolder.getAdapterPosition());
+                listener.onClick(v, albumsFilteredList.get(myViewHolder.getAdapterPosition()));
             }
         });
         return myViewHolder;
@@ -66,7 +69,7 @@ import java.util.ArrayList;
 
     @Override
     public void onBindViewHolder(@NonNull AlbumsAdapter.MyViewHolder myViewHolder, int i) {
-        Album album = albums.get(i);
+        Album album = albumsFilteredList.get(i);
         myViewHolder.albumName.setText(album.getAlbumName());
         Glide.with(context).load(album.getImageURL()).transition(DrawableTransitionOptions.withCrossFade()).into(myViewHolder.albumImage);
         myViewHolder.yearOfRelease.setText("Year of Release : " + String.valueOf(album.getYearOfRelease()));
@@ -76,7 +79,35 @@ import java.util.ArrayList;
 
     @Override
     public int getItemCount() {
-        return albums.size();
+        return albumsFilteredList.size();
     }
+
+        public Filter getFilter() {
+            return new Filter() {
+                @Override
+                protected FilterResults performFiltering(CharSequence constraint) {
+                    String charString = constraint.toString();
+                    if (charString.isEmpty()) {
+                        albumsFilteredList = albums;
+                    } else {
+                        ArrayList<Album> filteredList = new ArrayList<>();
+                        for (Album album : albums) {
+                            if (album.getAlbumName().toLowerCase().contains(charString.toLowerCase()))
+                                filteredList.add(album);
+                        }
+                        albumsFilteredList = filteredList;
+                    }
+                    FilterResults filterResults = new FilterResults();
+                    filterResults.values = albumsFilteredList;
+                    return filterResults;
+                }
+
+                @Override
+                protected void publishResults(CharSequence constraint, FilterResults results) {
+                    albumsFilteredList = (ArrayList<Album>) results.values;
+                    notifyDataSetChanged();
+                }
+            };
+        }
 
 }

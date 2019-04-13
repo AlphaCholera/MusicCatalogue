@@ -2,7 +2,8 @@
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="100dp"
-    android:background="?android:selectableItemBackground">
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    card_view:cardBackgroundColor="@android:color/transparent">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -17,7 +18,7 @@
 
         <TextView
             android:id="@+id/song_name_history"
-            style="@style/TextAppearance.AppCompat.Headline"
+            android:textSize="22sp"
             android:layout_width="227dp"
             android:layout_height="wrap_content"
             android:layout_alignTop="@+id/song_image_history"
@@ -25,7 +26,7 @@
             android:layout_marginStart="93dp"
             android:padding="8dp"
             android:text="Song"
-            android:textColor="@android:color/background_dark" />
+            android:textColor="@android:color/white" />
 
         <TextView
             android:id="@+id/album_name_history"
@@ -38,7 +39,7 @@
             android:layout_marginBottom="0dp"
             android:padding="8dp"
             android:text="Album Name"
-            android:textColor="?android:textColorSecondary" />
+            android:textColor="@color/text_color"/>
 
         <TextView
             android:id="@+id/time_history"
@@ -47,6 +48,7 @@
             android:gravity="center"
             android:layout_alignParentRight="true"
             android:layout_margin="5dp"
+            android:textColor="@color/text_color"
             android:text="Time" />
 
     </RelativeLayout>

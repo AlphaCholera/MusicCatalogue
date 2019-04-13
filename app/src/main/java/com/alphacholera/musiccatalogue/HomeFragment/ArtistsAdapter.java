@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 public class ArtistsAdapter extends RecyclerView.Adapter<ArtistsAdapter.MyViewHolder> {
 
     private ArrayList<Artist> artists;
+    private ArrayList<Artist> artistsFilteredList;
     private Context context;
     private ClickListener listener;
     private DatabaseManagement databaseManagement;
@@ -28,6 +30,7 @@ public class ArtistsAdapter extends RecyclerView.Adapter<ArtistsAdapter.MyViewHo
         this.context = context;
         this.listener = listener;
         this.artists = artists;
+        this.artistsFilteredList = artists;
         this.databaseManagement = new DatabaseManagement(context);
     }
 
@@ -53,7 +56,7 @@ public class ArtistsAdapter extends RecyclerView.Adapter<ArtistsAdapter.MyViewHo
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                listener.onClick(v, myViewHolder.getAdapterPosition());
+                listener.onClick(v, artistsFilteredList.get(myViewHolder.getAdapterPosition()));
             }
         });
         return myViewHolder;
@@ -61,7 +64,7 @@ public class ArtistsAdapter extends RecyclerView.Adapter<ArtistsAdapter.MyViewHo
 
     @Override
     public void onBindViewHolder(@NonNull ArtistsAdapter.MyViewHolder myViewHolder, int i) {
-        Artist artist = artists.get(i);
+        Artist artist = artistsFilteredList.get(i);
         myViewHolder.artistName.setText(artist.getArtistName());
         Glide.with(context).load(artist.getImageURL()).transition(DrawableTransitionOptions.withCrossFade()).into(myViewHolder.artistImage);
         myViewHolder.gender.setText(artist.getGender());
@@ -70,10 +73,38 @@ public class ArtistsAdapter extends RecyclerView.Adapter<ArtistsAdapter.MyViewHo
 
     @Override
     public int getItemCount() {
-        return artists.size();
+        return artistsFilteredList.size();
     }
 
     interface ClickListener {
-        void onClick(View view, int position);
+        void onClick(View view, Artist artist);
+    }
+
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                String charString = constraint.toString();
+                if (charString.isEmpty()) {
+                    artistsFilteredList = artists;
+                } else {
+                    ArrayList<Artist> filteredList = new ArrayList<>();
+                    for (Artist artist : artists) {
+                        if (artist.getArtistName().toLowerCase().contains(charString.toLowerCase()))
+                            filteredList.add(artist);
+                    }
+                    artistsFilteredList = filteredList;
+                }
+                FilterResults filterResults = new FilterResults();
+                filterResults.values = artistsFilteredList;
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                artistsFilteredList = (ArrayList<Artist>) results.values;
+                notifyDataSetChanged();
+            }
+        };
     }
 }

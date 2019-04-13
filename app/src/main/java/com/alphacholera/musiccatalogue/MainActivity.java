@@ -18,12 +18,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        if (getSupportActionBar() != null)
-//            getSupportActionBar().hide();
         int[] icons = {R.drawable.tab_home,
-                R.drawable.tab_search,
-                R.drawable.tab_home,
-                R.drawable.tab_search
+                R.drawable.tab_trending,
+                R.drawable.tab_history,
+                R.drawable.tab_profile
         };
 
         TabLayout tabLayout = findViewById(R.id.tab_layout);

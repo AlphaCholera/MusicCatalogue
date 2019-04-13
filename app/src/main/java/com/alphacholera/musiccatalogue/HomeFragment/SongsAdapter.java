@@ -7,6 +7,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -29,10 +30,12 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.MyViewHolder
     private Context context;
     private ClickListener listener;
     private DatabaseManagement databaseManagement;
+    private ArrayList<Song> songsListFiltered;
 
     public SongsAdapter(Context context, ArrayList<Song> songs, ClickListener listener) {
         this.context = context;
         this.songs = songs;
+        this.songsListFiltered = songs;
         this.listener = listener;
         this.databaseManagement = new DatabaseManagement(context);
     }
@@ -59,7 +62,7 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.MyViewHolder
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                listener.onClick(v, myViewHolder.getAdapterPosition());
+                listener.onClick(v, songsListFiltered.get(myViewHolder.getAdapterPosition()));
             }
         });
         return myViewHolder;
@@ -67,7 +70,7 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.MyViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull SongsAdapter.MyViewHolder myViewHolder, int i) {
-        Song song = songs.get(i);
+        Song song = songsListFiltered.get(i);
         myViewHolder.songName.setText(song.getSongName());
         myViewHolder.albumName.setText(databaseManagement.getAlbumName(song.getAlbumID()));
         String image = databaseManagement.getAlbumURL(song.getAlbumID());
@@ -78,10 +81,38 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.MyViewHolder
 
     @Override
     public int getItemCount() {
-        return songs.size();
+        return songsListFiltered.size();
     }
 
     public interface ClickListener {
-        public void onClick(View view, int position);
+        public void onClick(View view, Song song);
+    }
+
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                String charString = constraint.toString();
+                if (charString.isEmpty()) {
+                    songsListFiltered = songs;
+                } else {
+                    ArrayList<Song> filteredList = new ArrayList<>();
+                    for (Song song : songs) {
+                        if (song.getSongName().toLowerCase().contains(charString.toLowerCase()))
+                            filteredList.add(song);
+                    }
+                    songsListFiltered = filteredList;
+                }
+                FilterResults filterResults = new FilterResults();
+                filterResults.values = songsListFiltered;
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                songsListFiltered = (ArrayList<Song>) results.values;
+                notifyDataSetChanged();
+            }
+        };
     }
 }

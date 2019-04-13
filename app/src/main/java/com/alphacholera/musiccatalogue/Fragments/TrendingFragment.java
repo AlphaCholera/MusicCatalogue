@@ -42,10 +42,10 @@ public class TrendingFragment extends Fragment {
                 recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
                 SongsAdapter adapter = new SongsAdapter(getContext(), songsList, new SongsAdapter.ClickListener() {
                     @Override
-                    public void onClick(View view, int position) {
+                    public void onClick(View view, Song song) {
                         Intent intent = new Intent(getContext(), ViewSong.class);
-                        intent.putExtra("songID", songsList.get(position).getSongId());
-                        intent.putExtra("albumID", songsList.get(position).getAlbumID());
+                        intent.putExtra("songID", song.getSongId());
+                        intent.putExtra("albumID", song.getAlbumID());
                         startActivity(intent);
                     }
                 });
