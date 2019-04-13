@@ -4,13 +4,8 @@
     <color name="colorPrimaryDark">#141B38</color>
     <color name="colorAccent">#D81B60</color>
 
-    <color name="tabMedium">#2B2B2B</color>
-    <color name="tabDark">#000000</color>
-    <color name="tabTransparent">#10ffffff</color>
-
     <color name="tab_border">#1d222d</color>
     <color name="tab_background">#1d222d</color>
 
-    <color name="background_color">#1b1b1b</color>
     <color name="text_color">#e8e8e8</color>
 </resources>
